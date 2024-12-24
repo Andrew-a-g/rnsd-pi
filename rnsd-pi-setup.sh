@@ -16,9 +16,9 @@
 
 if ! grep -q "bookworm" /etc/os-release; then
 
-  echo "Error: This script is designed for Debian Bookworm. Exiting."
-
-  exit 1
+  echo "Warning: This script is designed for Debian Bookworm."
+  echo "It will continue to run but results are untested."
+  #exit 1
 
 fi
 
