@@ -17,7 +17,9 @@
 if ! grep -q "bookworm" /etc/os-release; then
 
   echo "Warning: This script is designed for Debian Bookworm."
+  
   echo "It will continue to run but results are untested."
+  
   #exit 1
 
 fi
@@ -140,7 +142,7 @@ sudo apt install -y python3 python3-pip python3-cryptography python3-serial
 
 echo "Installing Reticulum..."
 
-pip3 install rns --break-system-packages
+pip install rns --break-system-packages
 
 sudo ln -s $(which rnsd) /usr/local/bin/
 
