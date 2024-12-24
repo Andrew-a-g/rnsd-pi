@@ -288,7 +288,7 @@ if [[ $SERVICE_CONFIRM == "y" ]]; then
 
   # Create systemd service file
 
-  bash -c 'cat <<EOF > /etc/systemd/system/rnsd.service
+  sudo bash -c 'cat <<EOF > /etc/systemd/system/rnsd.service
 
  [Unit]
 
