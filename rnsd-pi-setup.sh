@@ -16,23 +16,45 @@
 
 if ! grep -q "bookworm" /etc/os-release; then
 
-  echo "Warning: This script is designed for Debian Bookworm."
+  echo "Error: This script is designed for Debian Bookworm.  Exit..."
   
-  echo "It will continue to run but results are untested."
-  
-  #exit 1
+  exit 1
 
 fi
 
 
 
-echo "Welcome to the rnsd Setup Wizard for Scenario 2!"
+echo "Welcome to the rnsd Setup Wizard for rnsd on Raspberry pi!"
 
 echo "This script will guide you through the installation and configuration process."
 
 echo
 
+# Ask if user has run an to update and upgrade the system
 
+echo
+
+echo "Before we begin, it is recommended to update and upgrade your system."
+echo "This ensures that you have the latest software packages and security updates."
+echo "If you allow this script to run the update and upgrade, it will take a few minutes to conplete and then quit."
+echo "You can also choose to skip this step and continue with the installation."
+echo "You will need to run the setup again to install rnsd if you run the updates."
+
+read -p "Would you like to run 'sudo apt update && sudo apt upgrade -y' to update your system? (y/n): " UPDATE_CONFIRM
+
+if [[ $UPDATE_CONFIRM == "y" ]]; then
+
+  echo "Updating system..."
+
+  sudo apt update && sudo apt upgrade -y
+
+  exit 1
+
+else
+
+  echo "Skipping system update."
+
+fi
 
 # Default values from the document
 
@@ -109,33 +131,24 @@ if [[ $CONFIRM != "y" ]]; then
 fi
 
 
-
-# Ask if user wants to update and upgrade the system
-
-echo
-
-read -p "Would you like to run 'sudo apt update && sudo apt upgrade -y' to update your system? (y/n): " UPDATE_CONFIRM
-
-if [[ $UPDATE_CONFIRM == "y" ]]; then
-
-  echo "Updating system..."
-
-  sudo apt update && sudo apt upgrade -y
-
-else
-
-  echo "Skipping system update."
-
-fi
-
-
-
 # Install dependencies
 
 echo "Installing dependencies..."
 
 sudo apt install -y python3 python3-pip python3-cryptography python3-serial
 
+# Check if dependencies are installed
+echo "Checking if dependencies are installed..."
+
+dependencies=(python3 python3-pip python3-cryptography python3-serial)
+for dep in "${dependencies[@]}"; do
+  if ! dpkg -s "$dep" >/dev/null 2>&1; then
+    echo "Error: $dep is not installed.  Cannot continue"
+    exit 1
+  fi
+done
+
+echo "All dependencies are installed."
 
 
 # Clone and install Reticulum
@@ -143,6 +156,13 @@ sudo apt install -y python3 python3-pip python3-cryptography python3-serial
 echo "Installing Reticulum..."
 
 pip install rns --break-system-packages
+
+# Check if rns is installed
+if ! pip show rns >/dev/null 2>&1; then
+  echo "Error: rns was not installed. Cannot continue."
+  echo "Please run the installation manually."
+  exit 1
+fi
 
 sudo ln -s $(which rnsd) /usr/local/bin/
 
@@ -320,12 +340,12 @@ fi
 
 echo
 
+echo "Congratulations!"
+
 echo "rnsd has been successfully installed and started with your configuration."
 
-echo "To stop the service, use the command: screen -S rnsd -X quit"
+echo "To stop the service, use the command: sudo systemctl stop rnsd"
 
-echo "To reconnect to the service, use the command: screen -r rnsd"
-
-echo "If you set up the service, use 'sudo systemctl stop rnsd' to stop it."
+echo "If you wish to debug the service please stop it as above and run rnsd -vvv"
 
 
