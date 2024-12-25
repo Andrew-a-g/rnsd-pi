@@ -40,24 +40,16 @@ echo
 # Ask if user has run an to update and upgrade the system
 
 echo "Before we begin, it is recommended to update and upgrade your system."
-echo "If you allow the script to do this, it will run 'sudo apt update && sudo apt upgrade -y' and then quit"
-echo "You will need to run the script again after the update and upgrade to continue."
+echo " To do this run 'sudo apt update && sudo apt upgrade -y' at the command prompt"
 
-read -p "Would you like to run 'sudo apt update && sudo apt upgrade -y' to update your system? (y/n): " UPDATE_CONFIRM
-
-if [[ $UPDATE_CONFIRM == "y" ]]; then
-
-  echo "Updating system..."
-
-  sudo apt update && sudo apt upgrade -y
-
-  exit 1
-
-else
-
-  echo "Skipping system update."
-
-fi
+while true; do
+    read -p "Press [Enter] key to continue or 'q' to quit: " choice
+    case "$choice" in 
+        [Qq]* ) echo "Quitting setup."; exit;;
+        "" ) break;;
+        * ) echo "Invalid input. Please press [Enter] to continue or 'q' to quit.";;
+    esac
+done
 
 # Default values from the document
 
