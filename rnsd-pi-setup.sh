@@ -32,7 +32,7 @@ fi
 
 echo "Welcome to the rnsd Setup Wizard for rnsd on Raspberry pi!"
 
-echo "This script will guide you through the installation and configuration
+echo "This script will guide you through the installation and configuration"
 echo "process to setup your pi as a LoRa gateway for reticulum."
 
 echo
@@ -40,7 +40,7 @@ echo
 # Ask if user has run an to update and upgrade the system
 
 echo "Before we begin, it is recommended to update and upgrade your system."
-echo " To do this run 'sudo apt update && sudo apt upgrade -y' at the command prompt"
+echo "To do this run 'sudo apt update && sudo apt upgrade -y' at the command prompt"
 
 while true; do
     read -p "Press [Enter] key to continue or 'q' to quit: " choice
