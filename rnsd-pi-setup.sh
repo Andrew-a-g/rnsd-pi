@@ -22,23 +22,26 @@ if ! grep -q "bookworm" /etc/os-release; then
 
 fi
 
-
+ echo " _____  _   _  _____ _____         _____ _____ "
+ echo "|  __ \| \ | |/ ____|  __ \       |  __ \_   _|"
+ echo "| |__) |  \| | (___ | |  | |______| |__) || |  "
+ echo "|  _  /| . ` |\___ \| |  | |______|  ___/ | |  "
+ echo "| | \ \| |\  |____) | |__| |      | |    _| |_ "
+ echo "|_|  \_\_| \_|_____/|_____/       |_|   |_____|"
+                                               
 
 echo "Welcome to the rnsd Setup Wizard for rnsd on Raspberry pi!"
 
-echo "This script will guide you through the installation and configuration process."
+echo "This script will guide you through the installation and configuration
+echo "process to setup your pi as a LoRa gateway for reticulum."
 
 echo
 
 # Ask if user has run an to update and upgrade the system
 
-echo
-
 echo "Before we begin, it is recommended to update and upgrade your system."
-echo "This ensures that you have the latest software packages and security updates."
-echo "If you allow this script to run the update and upgrade, it will take a few minutes to conplete and then quit."
-echo "You can also choose to skip this step and continue with the installation."
-echo "You will need to run the setup again to install rnsd if you run the updates."
+echo "If you allow the script to do this, it will run 'sudo apt update && sudo apt upgrade -y' and then quit"
+echo "You will need to run the script again after the update and upgrade to continue."
 
 read -p "Would you like to run 'sudo apt update && sudo apt upgrade -y' to update your system? (y/n): " UPDATE_CONFIRM
 
@@ -71,6 +74,10 @@ DEFAULT_CODING_RATE="5"
 
 
 # Prompt the user for input
+
+# List available USB devices
+echo "Available USB devices:"
+ls /dev/ttyUSB*
 
 read -p "Enter USB path (default: $DEFAULT_USB_PATH): " USB_PATH
 
@@ -174,9 +181,13 @@ USER=$(whoami)
 
 echo "Adding /home/$USER/.local/bin to the PATH for the current session..."
 
-echo "export PATH=\$PATH:/home/$USER/.local/bin" >> ~/.bashrc
+if ! grep -q "/home/$USER/.local/bin" ~/.bashrc; then
+  echo "export PATH=\$PATH:/home/$USER/.local/bin" >> ~/.bashrc
+fi
 
-echo "export PATH=\$PATH:/home/$USER/.local/bin" >> ~/.profile
+if ! grep -q "/home/$USER/.local/bin" ~/.profile; then
+  echo "export PATH=\$PATH:/home/$USER/.local/bin" >> ~/.profile
+fi
 
 
 
@@ -250,7 +261,7 @@ cat <<EOL > $CONFIG_PATH/config
 
 
 
-# Reticulum configuration for Scenario 2
+# Reticulum configuration for LoRa
 
 [LoRaInterface]
 
