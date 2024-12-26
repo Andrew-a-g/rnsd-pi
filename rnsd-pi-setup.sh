@@ -28,9 +28,11 @@ fi
  echo "|  _  /| .   |\___ \| |  | |______|  ___/ | |  "
  echo "| | \ \| |\  |____) | |__| |      | |    _| |_ "
  echo "|_|  \_\_| \_|_____/|_____/       |_|   |_____|"
-                                               
+ echo                                  
 
-echo "Welcome to the rnsd Setup Wizard for rnsd on Raspberry pi!"
+echo "Welcome to the rnsd Setup Wizard for Raspberry pi!"
+
+echo
 
 echo "This script will guide you through the installation and configuration"
 echo "process to setup your pi as a LoRa gateway for reticulum."
@@ -156,6 +158,9 @@ echo "Installing Reticulum..."
 
 pip install rns --break-system-packages
 
+echo 
+
+echo "Checking install..."
 # Check if rns is installed
 if ! pip show rns >/dev/null 2>&1; then
   echo "Error: rns was not installed. Cannot continue."
@@ -163,25 +168,25 @@ if ! pip show rns >/dev/null 2>&1; then
   exit 1
 fi
 
+echo
+
 sudo ln -s $(which rnsd) /usr/local/bin/
 
-
+echo
 
 # Add ~/.local/bin to PATH for the current session
 
 USER=$(whoami)
 
-echo "Adding /home/$USER/.local/bin to the PATH for the current session..."
+echo "Adding /home/$USER/.local/bin to the PATH..."
 
 if ! grep -q "/home/$USER/.local/bin" ~/.bashrc; then
   echo "export PATH=\$PATH:/home/$USER/.local/bin" >> ~/.bashrc
 fi
 
-if ! grep -q "/home/$USER/.local/bin" ~/.profile; then
-  echo "export PATH=\$PATH:/home/$USER/.local/bin" >> ~/.profile
-fi
+export PATH=\$PATH:/home/$USER/.local/bin"
 
-
+echo
 
 # Apply changes immediately to the current session
 
@@ -330,14 +335,15 @@ EOF'
   # Enable and start the service
 
   sudo systemctl enable rnsd
-
   sudo systemctl start rnsd
 
   echo "rnsd has been set up as a system service and started."
 
 fi
 
+echo
 
+sudo systemctl status rnsd
 
 # Completion message
 
@@ -351,4 +357,16 @@ echo "To stop the service, use the command: sudo systemctl stop rnsd"
 
 echo "If you wish to debug the service please stop it as above and run rnsd -vvv"
 
+# Get the current hostname and IP address
+HOSTNAME=$(hostname)
+IP_ADDRESS=$(hostname -I | awk '{print $1}')
+
+# Information on how to connect to this system in MeshChat via TCP
+echo
+echo "To connect to this rnsd instance in MeshChat via TCP, use the following details..."
+echo "IP address: $IP_ADDRESS or Host: $HOSTNAME"
+echo "Port: 4242"
+echo
+echo "Replace $IP_ADDRESS with the IP address of this system if it changes."
+echo "It is best practice to set a static IP address for this system."
 
