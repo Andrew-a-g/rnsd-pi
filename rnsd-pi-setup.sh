@@ -69,9 +69,13 @@ DEFAULT_CODING_RATE="5"
 
 # Prompt the user for input
 
+echo
+
 # List available USB devices
 echo "Available USB devices:"
 ls /dev/ttyUSB*
+
+echo
 
 read -p "Enter USB path (default: $DEFAULT_USB_PATH): " USB_PATH
 
@@ -131,12 +135,15 @@ if [[ $CONFIRM != "y" ]]; then
 
 fi
 
+echo
 
 # Install dependencies
 
 echo "Installing dependencies..."
 
 sudo apt install -y python3 python3-pip python3-cryptography python3-serial
+
+echo
 
 # Check if dependencies are installed
 echo "Checking if dependencies are installed..."
@@ -149,8 +156,11 @@ for dep in "${dependencies[@]}"; do
   fi
 done
 
+echo
+
 echo "All dependencies are installed."
 
+echo
 
 # Clone and install Reticulum
 
@@ -184,7 +194,7 @@ if ! grep -q "/home/$USER/.local/bin" ~/.bashrc; then
   echo "export PATH=\$PATH:/home/$USER/.local/bin" >> ~/.bashrc
 fi
 
-export PATH=\$PATH:/home/$USER/.local/bin"
+PATH=$PATH:/home/$USER/.local/bin
 
 echo
 
@@ -351,6 +361,8 @@ echo
 
 echo "Congratulations!"
 
+echo
+
 echo "rnsd has been successfully installed and started with your configuration."
 
 echo "To stop the service, use the command: sudo systemctl stop rnsd"
@@ -363,7 +375,7 @@ IP_ADDRESS=$(hostname -I | awk '{print $1}')
 
 # Information on how to connect to this system in MeshChat via TCP
 echo
-echo "To connect to this rnsd instance in MeshChat via TCP, use the following details..."
+echo "To connect to this rnsd instance in MeshChat via a TCP client interface, use the following details..."
 echo "IP address: $IP_ADDRESS or Host: $HOSTNAME"
 echo "Port: 4242"
 echo
