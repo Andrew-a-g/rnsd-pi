@@ -194,7 +194,7 @@ if ! grep -q "/home/$USER/.local/bin" ~/.bashrc; then
   echo "export PATH=\$PATH:/home/$USER/.local/bin" >> ~/.bashrc
 fi
 
-PATH=$PATH:/home/$USER/.local/bin
+export PATH=$PATH:/home/$USER/.local/bin
 
 echo
 
