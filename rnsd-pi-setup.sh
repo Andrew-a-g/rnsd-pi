@@ -307,15 +307,12 @@ EOF'
   # Enable and start the service
 
   sudo systemctl enable rnsd
-  sudo systemctl start rnsd
 
-  echo "rnsd has been set up as a system service and started."
+  echo "rnsd has been set up as a system service - it will run on next restart."
 
 fi
 
 echo
-
-sudo systemctl status rnsd
 
 # Completion message
 
@@ -325,11 +322,11 @@ echo "Congratulations!"
 
 echo
 
-echo "rnsd has been successfully installed and started with your configuration."
+echo "rnsd has been successfully installed and with your configuration."
 
-echo "To stop the service, use the command: sudo systemctl stop rnsd"
-
-echo "If you wish to debug the service please stop it as above and run rnsd -vvv"
+echo "RNSD is not currenlty running.  I recommend you debug the service by runining the following command.."
+echo 
+echo "rnsd -vvv"
 
 # Get the current hostname and IP address
 HOSTNAME=$(hostname)
@@ -343,4 +340,4 @@ echo "Port: 4242"
 echo
 echo "Replace $IP_ADDRESS with the IP address of this system if it changes."
 echo "It is best practice to set a static IP address for this system."
-
+echo "Once you are happy with the debug restart the pi and rnsd will start automatically."
