@@ -74,7 +74,7 @@ echo
 # List available USB devices
 echo "Available USB devices:"
 ls /dev/ttyUSB*
-
+ls /dev/ttyACM*
 echo
 
 read -p "Enter USB path (default: $DEFAULT_USB_PATH): " USB_PATH
