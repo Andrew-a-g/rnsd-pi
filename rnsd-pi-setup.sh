@@ -265,7 +265,7 @@ if [[ $SERVICE_CONFIRM == "y" ]]; then
   echo "Setting up rnsd as a system service..."
 
  
-
+  SERVICE_USER=$(whoami)
   # Create systemd service file
 
   sudo bash -c 'cat <<EOF > /etc/systemd/system/rnsd.service
@@ -288,7 +288,7 @@ Restart=always
 
 RestartSec=3
 
-User=$(whoami)
+User=$SERVICE_USER
 
 ExecStart=rnsd --service
 
