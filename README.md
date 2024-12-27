@@ -71,7 +71,7 @@ Reticulum clients include nomadnet, meshchat and sideband.  You will need to con
 2. Open meshchat.
 3. Go to interfaces.
 4. Click add interface
-5. Add an tcp client interface.
+5. Give the interface a name and then add a tcp client interface.
 6. Enter the details of the pi shown at the end of the script.
 
 Other links...

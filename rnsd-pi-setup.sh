@@ -215,78 +215,40 @@ mkdir -p $CONFIG_PATH
 cat <<EOL > $CONFIG_PATH/config
 
 [reticulum]
-
   enable_transport = Yes
-
   share_instance = Yes
-
-
-
   shared_instance_port = 37428
-
   instance_control_port = 37429
-
-
-
   panic_on_interface_error = No
 
-
-
 [logging]
-
   loglevel = 4
 
-
-
 [interfaces]
-
   [[Default Interface]]
-
     type = AutoInterface
-
     interface_enabled = True
-
-
 
   [[TCP Server Interface]]
-
     type = TCPServerInterface
-
     interface_enabled = True
-
-
-
     # This configuration will listen on all IP
-
     # interfaces on port 4242
-
-
-
     listen_ip = 0.0.0.0
-
     listen_port = 4242
-
-
 
   # Reticulum configuration for LoRa
 
-  [LoRaInterface]
-
-    enabled = true
-
+  [[RNode LoRa Interface]]
     type = RNodeInterface
+    interface_enabled = True
+    port = /dev/ttyUSB0
+    frequency = 867500000
+    bandwidth = 125000
+    txpower = 22
+    spreadingfactor = 9
+    codingrate = 5
 
-    device = $USB_PATH
-
-    frequency = $FREQUENCY
-
-    bandwidth = $BANDWIDTH
-
-    spreading-factor = $SPREADING_FACTOR
-
-    coding-rate = $CODING_RATE
-
-    tx-power = 22
 
 EOL
 
