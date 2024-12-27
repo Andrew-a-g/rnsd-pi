@@ -268,25 +268,25 @@ cat <<EOL > $CONFIG_PATH/config
 
 
 
-# Reticulum configuration for LoRa
+  # Reticulum configuration for LoRa
 
-[LoRaInterface]
+  [LoRaInterface]
 
-  enabled = true
+    enabled = true
 
-  type = RNodeInterface
+    type = RNodeInterface
 
-  device = $USB_PATH
+    device = $USB_PATH
 
-  frequency = $FREQUENCY
+    frequency = $FREQUENCY
 
-  bandwidth = $BANDWIDTH
+    bandwidth = $BANDWIDTH
 
-  spreading-factor = $SPREADING_FACTOR
+    spreading-factor = $SPREADING_FACTOR
 
-  coding-rate = $CODING_RATE
+    coding-rate = $CODING_RATE
 
-  tx-power = 22
+    tx-power = 22
 
 EOL
 
