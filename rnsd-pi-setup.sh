@@ -196,21 +196,18 @@ fi
 
 export PATH=$PATH:/home/$USER/.local/bin
 
+# Add to /etc/profile
+if ! grep -q "/home/$USER/.local/bin" /etc/profile; then
+  sudo sed -i "/^else$/,/^fi$/ s|PATH=\"\(.*\)\"|PATH=\"\1:/home/$USER/.local/bin\"|" /etc/profile
+fi
+
 echo
-
-# Apply changes immediately to the current session
-
-source ~/.bashrc
-
-
 
 # Create configuration file
 
 CONFIG_PATH="$HOME/.reticulum"
 
 mkdir -p $CONFIG_PATH
-
-
 
 cat <<EOL > $CONFIG_PATH/config
 
@@ -225,9 +222,6 @@ cat <<EOL > $CONFIG_PATH/config
   loglevel = 4
 
 [interfaces]
-  [[Default Interface]]
-    type = AutoInterface
-    interface_enabled = True
 
   [[TCP Server Interface]]
     type = TCPServerInterface
@@ -242,12 +236,12 @@ cat <<EOL > $CONFIG_PATH/config
   [[RNode LoRa Interface]]
     type = RNodeInterface
     interface_enabled = True
-    port = /dev/ttyUSB0
-    frequency = 867500000
-    bandwidth = 125000
+    port = $USB_PATH
+    frequency = $FREQUENCY
+    bandwidth = $BANDWIDTH
     txpower = 22
-    spreadingfactor = 9
-    codingrate = 5
+    spreadingfactor = $SPREADING_FACTOR
+    codingrate = $CODING_RATE
 
 
 EOL
@@ -268,9 +262,9 @@ if [[ $SERVICE_CONFIRM == "y" ]]; then
   SERVICE_USER=$(whoami)
   # Create systemd service file
 
-  sudo bash -c 'cat <<EOF > /etc/systemd/system/rnsd.service
+  sudo bash -c "cat <<EOF > /etc/systemd/system/rnsd.service
 
- [Unit]
+[Unit]
 
 Description=Reticulum Network Stack Daemon
 
@@ -300,7 +294,7 @@ WantedBy=multi-user.target
 
 
 
-EOF'
+EOF"
 
 
 
