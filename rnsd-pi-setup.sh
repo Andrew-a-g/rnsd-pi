@@ -287,7 +287,7 @@ RestartSec=3
 
 User=$SERVICE_USER
 
-ExecStart=rnsd --service
+ExecStart=/home/$USER/.local/bin/rnsd --service
 
 
 
