@@ -243,6 +243,9 @@ cat <<EOL > $CONFIG_PATH/config
     spreadingfactor = $SPREADING_FACTOR
     codingrate = $CODING_RATE
 
+    # Implement the european restriction on 10% hourly airtime
+    airtime_limit_long = 10
+    #airtime_limit_short = 25
 
 EOL
 
@@ -321,6 +324,7 @@ echo "rnsd has been successfully installed and with your configuration."
 echo "RNSD is not currenlty running.  I recommend you debug the service by runining the following command.."
 echo 
 echo "rnsd -vvv"
+echo "or /home/$USER/.local/bin/rnsd -vvv if your paths are not set correctly." 
 
 # Get the current hostname and IP address
 HOSTNAME=$(hostname)
