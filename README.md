@@ -77,3 +77,12 @@ Reticulum clients include nomadnet, meshchat and sideband.  You will need to con
 Other links...
 Nomadned client - https://github.com/markqvist/NomadNet
 Sideband android app - https://github.com/markqvist/Sideband
+
+
+# Roadmap
+- [ ] Enable respond to probes by default  
+- [ ] Add option to chose frequency definitions for common regions from a list 
+- [ ] LXMF lxmd propagation servers  
+- [ ] MQTT reporting signal stats  
+- [ ] Option to connect to a testnet system  
+- [ ] Kick-ass 3D printed case design for this solution  
