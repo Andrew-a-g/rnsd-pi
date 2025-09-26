@@ -57,13 +57,13 @@ done
 
 DEFAULT_USB_PATH="/dev/ttyUSB0"
 
-DEFAULT_FREQUENCY="867500000"
+DEFAULT_FREQUENCY="869432000" # now using narrow - former wide default setting "867500000"
 
-DEFAULT_BANDWIDTH="125000"
+DEFAULT_BANDWIDTH="62500" #now narrow - former wide setting "125000"
 
-DEFAULT_SPREADING_FACTOR="9"
+DEFAULT_SPREADING_FACTOR="8"
 
-DEFAULT_CODING_RATE="5"
+DEFAULT_CODING_RATE="7"
 
 
 
@@ -230,12 +230,14 @@ cat <<EOL > $CONFIG_PATH/config
     # interfaces on port 4242
     listen_ip = 0.0.0.0
     listen_port = 4242
+    mode = gw
 
   # Reticulum configuration for LoRa
 
   [[RNode LoRa Interface]]
     type = RNodeInterface
     interface_enabled = True
+    mode = ap
     port = $USB_PATH
     frequency = $FREQUENCY
     bandwidth = $BANDWIDTH
