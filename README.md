@@ -75,10 +75,10 @@ sudo apt update && sudo apt upgrade -y
 You need an RNode-compatible device. Supported hardware is listed here:
 https://markqvist.github.io/Reticulum/manual/hardware.html#supported-boards-and-devices
 
-### Flashing a Heltec V3 (recommended beginner device)
+### Flashing a Heltec V4 (recommended beginner device)
 
 1. In a Chrome browser, go to: https://liamcottle.github.io/rnode-flasher/
-2. Select your device model (e.g. **Heltec Lora32 V3**)
+2. Select your device model (e.g. **Heltec Lora32 V4**)
 3. Select **868 MHz** (UK/EU) or the appropriate frequency for your region
 4. Click **Official Firmware** and download the latest release from:
    https://github.com/markqvist/RNode_Firmware/releases/latest
@@ -106,6 +106,8 @@ rnodeconf /dev/ttyACM0 -w STATION --ssid your_wifi_ssid --psk your_wifi_password
 ```
 
 Tip: check your router's DHCP table before and after to identify the RNode's new IP address. Then enter `tcp://192.168.1.x` when the wizard asks for the RNode port.
+
+Note: You may run through the install with a chosen and then run the wifi command on the pi/linux machine at the end.  It should come up after a reboot.
 
 ---
 
@@ -166,7 +168,7 @@ Micron format docs: https://github.com/markqvist/NomadNet
 
 ### LXMF Distribution Group (Advanced)
 
-> Only set this up if you understand how LXMF distribution groups work. They are **not** broadcast messages — they must be hosted on a Reticulum node. Messages are retained on propagation servers.
+> Only set this up if you understand how LXMF distribution groups work. They are **not** broadcast messages — they must be hosted on a Reticulum node. Messages can be retained on propagation servers for delivery later.
 
 The group runs as `lxmf-distgroup.service` using SebastianObi's `lxmf_distribution_group_extended` tool.
 
