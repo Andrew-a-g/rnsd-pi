@@ -82,7 +82,7 @@ https://markqvist.github.io/Reticulum/manual/hardware.html#supported-boards-and-
 3. Select **868 MHz** (UK/EU) or the appropriate frequency for your region
 4. Click **Official Firmware** and download the latest release from:
    https://github.com/markqvist/RNode_Firmware/releases/latest
-5. Plug the Heltec V3 into a PC or Mac with Chrome
+5. Plug the Heltec V4 into a PC or Mac with Chrome
 6. Under Section 2, select the zip file and click **Flash Now**, then select your serial port
 7. Wait for flashing to complete
 
@@ -105,7 +105,7 @@ If you want the RNode to run on a separate, more powerful machine (to reduce pow
 rnodeconf /dev/ttyACM0 -w STATION --ssid your_wifi_ssid --psk your_wifi_password
 ```
 
-Tip: check your router's DHCP table before and after to identify the RNode's new IP address. Then enter `tcp://192.168.1.x` when the wizard asks for the RNode port.
+Tip: check your router's DHCP table before and after to identify the RNode's new IP address. Then enter `tcp://192.168.1.x` when the wizard asks for the RNode port.  You can even host the wifi network from the pi to isolate it.
 
 Note: You may run through the install with a chosen and then run the wifi command on the pi/linux machine at the end.  It should come up after a reboot.
 
