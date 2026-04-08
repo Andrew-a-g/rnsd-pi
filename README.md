@@ -14,17 +14,17 @@ The key components are:
 - **LXMF** — a lightweight messaging protocol that runs over RNS
 - **NomadNet** — a client/server app that can host "micron pages," simple hyperlinked pages similar to Teletext
 
-###Running RNS
+### Running RNS
 
 RNS is written in Python, so it traditionally required a Raspberry Pi or similar machine. The MicroReticulum project by attaman changed this by bringing RNS to microcontrollers (SBCs), and recent updates have added full transport node support — meaning even small, low-power devices can now participate in routing traffic across a network.
 
-###Limitations to be aware of
+### Limitations to be aware of
 
 RNS/LXMF doesn't natively support group messaging in the way apps like Meshtastic, Meshcore etc do. However, you can run a distribution group server that acts as a relay — search for LXMF Distribution Group to get started.  It makes sense to run this in the most central location for your mesh as possible.
 
 For everything else, the [official manual](https://reticulum.network/manual/) is comprehensive and worth reading in full.
 
-###Why would I run this if microreticulum is a thing?
+### Why would I run this if microreticulum is a thing?
 You can host the full network stack, host propagation nodes, distribution groups, nomadnet pages.  The microreticulum is also very experimental so there may be bugs.
 
 ## Quick Start
