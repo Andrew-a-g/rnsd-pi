@@ -4,9 +4,30 @@ A setup wizard to install and configure Reticulum Network Stack (RNS) on a Raspb
 
 The goal is to make Reticulum more accessible and reduce the barriers to entry — no manual config file editing required.
 
+## What is Reticulum?
+
+Reticulum (RNS) is a cryptographic networking stack — think of it like TCP/IP, but designed to work across wildly different physical layers: HF radio, LoRa, standard TCP/IP, 2.4GHz wireless, and even QR codes.
+The key components are:
+
+- **RNS** — the network stack itself, handling addressing, encryption, and routing
+- **RNode** — a hardware modem that connects RNS to a physical radio layer
+- **LXMF** — a lightweight messaging protocol that runs over RNS
+- **NomadNet** — a client/server app that can host "micron pages," simple hyperlinked pages similar to Teletext
+
+###Running RNS
+RNS is written in Python, so it traditionally required a Raspberry Pi or similar machine. The MicroReticulum project by attaman changed this by bringing RNS to microcontrollers (SBCs), and recent updates have added full transport node support — meaning even small, low-power devices can now participate in routing traffic across a network.
+
+###Limitations to be aware of
+RNS/LXMF doesn't natively support group messaging in the way apps like Meshtastic, Meshcore etc do. However, you can run a distribution group server that acts as a relay — search for LXMF Distribution Group to get started.  It makes sense to run this in the most central location for your mesh as possible.
+
+For everything else, the [official manual](https://reticulum.network/manual/) is comprehensive and worth reading in full.
+
+###Why would I run this if microreticulum is a thing?
+You can host the full network stack, host propagation nodes, distribution groups, nomadnet pages.  The microreticulum is also very experimental so there may be bugs.
+
 ## Quick Start
 
-If you already have your RNode and Pi ready, paste this command into your terminal:
+If you already have your RNode and Pi/server ready, paste this command into your terminal:
 
 ```bash
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/Andrew-a-g/rnsd-pi/refs/heads/main/rnsd-pi-setup.sh)"
@@ -16,13 +37,13 @@ If you are new to this, keep reading to set up your environment from scratch.
 
 ---
 
-## About
+## About this script
 
-Reticulum is a network stack on which the LXMF messaging protocol runs. It works over any available physical link — LoRa, serial, WiFi, TCP/IP, and more. Once set up, you can use it to chat securely with others on an off-grid network using apps like **Sideband** (Android/iOS) or **MeshChat** (PC/Mac/Linux).
+This script will setup the Reticulum network stack on which the LXMF messaging protocol runs on your server or pi.  Once set up, you can use it to chat securely with others on an off-grid network using apps like **Columba**, **Sideband** (Android/iOS) or **MeshChat** (PC/Mac/Linux).  With transport node enabled these devices can "mesh" together to create a network.
 
 Read more: https://markqvist.github.io/Reticulum/manual/
 
-This script turns a Raspberry Pi into a permanent Reticulum LoRa gateway for your local network. Once running, any device on your WiFi can route messages through the LoRa radio automatically.
+RNS setup using this script will also mesh with other reticulum LoRa devices in range to create a small mesh network.
 
 ### Example Network
 
@@ -59,7 +80,7 @@ All selected services are configured as systemd units that start automatically o
 
 ## Requirements
 
-- Raspberry Pi (or any Debian Bookworm Linux system)
+- Raspberry Pi (or any Debian Linux system)
 - A flashed RNode device (see Section 1 below)
 - Internet access during install (to download packages and frequency presets)
 

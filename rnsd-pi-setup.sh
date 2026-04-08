@@ -495,6 +495,7 @@ write_reticulum_config() {
   [[RNode LoRa Interface]]
     type = RNodeInterface
     interface_enabled = True
+    flow_control = False
     mode = ${RNODE_MODE}
     port = ${RNODE_PORT}
     frequency = ${FREQUENCY}
@@ -503,8 +504,13 @@ write_reticulum_config() {
     spreadingfactor = ${SPREADING_FACTOR}
     codingrate = ${CODING_RATE}
 
+    # Configure CDMA parameters. These
+    # settings are reasonable defaults.
+    persistence = 200
+    slottime = 20
+
     # European 10% hourly airtime restriction
-    airtime_limit_long = 10
+    # airtime_limit_long = 10
 EOL
   ok "Reticulum config written: ${CONFIG_DIR}/config"
 }
@@ -796,6 +802,7 @@ show_completion() {
     box_left "Dist. group:  run 'lxmd --info' after boot and copy the" "$YELLOW"
     box_left "  propagation_node hash into ~/.lxmf_distribution_group/config" "$YELLOW"
   fi
+  box_left "Please review settings at ~/.reticulum/config to ensure compliance with your local regulations." "$WHITE"
   box_blank
   box_bot
   echo

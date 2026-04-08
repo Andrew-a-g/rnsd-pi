@@ -10,16 +10,30 @@
 
 presets:
 
-  - name: "UK / EU 868 MHz - Faster (Default - 869.431 MHz, BW125, SF8, CR5)"
+  - name: "UK / EU 868 MHz - Faster 3.3Kbps (Default - 869.431 MHz, BW125, SF8, CR5)"
     frequency: 869431000
     bandwidth: 125000
     spreading_factor: 8
     coding_rate: 5
-    notes: "EU SRD868 band. 869.4-869.65 MHz, up to 500mW ERP, 10% duty cycle."
+    notes: "EU 868 band. 869.4-869.65 MHz, up to 500mW ERP, 10% duty cycle."
 
-  - name: "EU 868 MHz Narrow - Slower (869.431 MHz, BW62.5, SF8, CR7)"
+  - name: "EU 868 MHz - Narrow - Slower 1.1Kbps (869.431 MHz, BW62.5, SF8, CR7)"
     frequency: 869431000
     bandwidth: 62500
     spreading_factor: 8
     coding_rate: 7
     notes: "Narrower bandwidth for overcoming noise / longer range in urban environments."
+
+  - name: "US 915 MHz - Faster 3.3Kbps (914.875 MHz, BW125, SF8, CR5)"
+    frequency: 914875000
+    bandwidth: 125000
+    spreading_factor: 8
+    coding_rate: 7
+    notes: "US 915 MHz band, up to 1w"
+
+  - name: "US 915 MHz - Narrow - Slower 1.1Kbps (914.875 MHz, BW62.5, SF8, CR7)"
+    frequency: 914875000
+    bandwidth: 62500
+    spreading_factor: 8
+    coding_rate: 7
+    notes: "US 915 MHz band, up to 1w"
