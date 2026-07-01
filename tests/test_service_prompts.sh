@@ -49,4 +49,14 @@ if ! grep -q 'WantedBy=multi-user.target lxmd.service' "$REPO_ROOT/rnsd-pi-setup
   exit 1
 fi
 
+if ! grep -q 'rnsd.service.d/optional-services.conf' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "installer should add an rnsd drop-in to start selected optional services after rnsd starts" >&2
+  exit 1
+fi
+
+if ! grep -q 'ExecStartPost=/bin/sh -c' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "rnsd drop-in should use ExecStartPost to kick optional services at boot" >&2
+  exit 1
+fi
+
 echo "service prompt tests passed"
