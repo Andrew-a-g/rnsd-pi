@@ -71,10 +71,11 @@ The setup wizard walks you through each option with a full-screen blue interface
 ### Wizard Steps
 
 1. **Name your environment** — e.g. `AG` gives you `AG-PropServer`, `AG-NomadNet` etc.
-2. **RNode port** — USB serial (`/dev/ttyUSB0`) or TCP (`tcp://192.168.1.115`) for network-connected RNodes
-3. **LoRa settings** — frequency presets downloaded from GitHub (defaults to UK 869.431 MHz / 125 kHz BW / SF8 / CR5), or enter manually
-4. **Optional components** — LXMF propagation server, NomadNet page hosting, distribution group
-5. **Summary and confirm** — review all settings before anything is written
+2. **Choose what to install** — Reticulum/rnsd is selectable, so you can skip it when adding optional components to an existing node
+3. **RNode port** — USB serial (`/dev/ttyUSB0`) or TCP (`tcp://192.168.1.115`) for network-connected RNodes, if Reticulum/rnsd is selected
+4. **LoRa settings** — frequency presets downloaded from GitHub (defaults to UK 869.431 MHz / 125 kHz BW / SF8 / CR5), or enter manually
+5. **Optional components** — LXMF propagation server, NomadNet page hosting, distribution group
+6. **Summary and confirm** — review all settings before anything is written
 
 All selected services are configured as systemd units that start automatically on boot in the correct order.
 
@@ -143,6 +144,22 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/Andrew-a-g/rnsd-pi/refs
 ```
 
 The wizard will guide you through all settings. At the end it will display the IP address and port to use when connecting clients.
+
+### Existing Config Files
+
+Before the wizard overwrites an existing config file, it now warns you and asks whether to continue. If you choose to overwrite, it also offers to create a timestamped backup under:
+
+```bash
+~/.rnsd-pi/backups/
+```
+
+This applies to the generated Reticulum, LXMF, NomadNet, NomadNet page, and LXMF distribution group override files. If you decline to overwrite a file, the existing file is left in place.
+
+### Partial / Optional Installs
+
+Reticulum/rnsd setup can be skipped. This is useful when Reticulum is already installed and you only want to add or reconfigure optional components such as LXMF, NomadNet, or a distribution group.
+
+If you skip Reticulum/rnsd, make sure the system already has a working Reticulum installation before enabling components that depend on it.
 
 ---
 

@@ -100,6 +100,47 @@ yn_prompt() {
 
 yn_to_str() { [ "$1" = "y" ] && echo "Yes" || echo "No"; }
 
+safe_name() {
+  printf '%s' "$1" | tr -c '[:alnum:]._-' '_'
+}
+
+backup_existing_file() {
+  local target="$1" label="$2"
+  local backup_dir="$HOME/.rnsd-pi/backups"
+  local ts backup_path
+
+  mkdir -p "$backup_dir"
+  ts=$(date '+%Y%m%d-%H%M%S')
+  backup_path="${backup_dir}/$(safe_name "$label")-${ts}"
+
+  cp -a "$target" "$backup_path"
+  ok "Backup created: ${backup_path}"
+}
+
+prepare_config_write() {
+  # prepare_config_write <target-path> <friendly-label>
+  # Returns 0 if the caller should write the file, 1 if it should skip.
+  local target="$1" label="$2"
+
+  if [ ! -e "$target" ]; then
+    return 0
+  fi
+
+  warn "Existing ${label} config found: ${target}"
+  warn "Continuing will overwrite this file."
+
+  if ! yn_prompt "Overwrite existing ${label} config?" "n"; then
+    warn "Keeping existing ${label} config unchanged."
+    return 1
+  fi
+
+  if yn_prompt "Back up existing ${label} config before overwriting?" "y"; then
+    backup_existing_file "$target" "$label"
+  fi
+
+  return 0
+}
+
 # =============================================================================
 # SPLASH SCREEN
 # =============================================================================
@@ -172,10 +213,29 @@ get_env_name() {
 }
 
 # =============================================================================
-# STEP 2 – RNode port / TCP address
+# STEP 2 – Installation features
+# =============================================================================
+select_install_features() {
+  step_banner 2 "Choose What To Install"
+  echo
+  info "Every major component is optional."
+  info "Choose only the features you want to install or reconfigure."
+  echo
+
+  if yn_prompt "Install or configure Reticulum/rnsd transport node?" "y"; then
+    INSTALL_RNS="y"
+  else
+    INSTALL_RNS="n"
+    warn "Reticulum/rnsd config, LoRa settings and rnsd service setup will be skipped."
+    warn "Use this mode only if Reticulum is already installed, or if you only want other components."
+  fi
+}
+
+# =============================================================================
+# STEP 3 – RNode port / TCP address
 # =============================================================================
 get_rnode_port() {
-  step_banner 2 "RNode Interface / Port"
+  step_banner 3 "RNode Interface / Port"
   echo
   info "Detected serial devices:"
   ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null \
@@ -208,10 +268,10 @@ get_rnode_port() {
 }
 
 # =============================================================================
-# STEP 3 – LoRa settings
+# STEP 4 – LoRa settings
 # =============================================================================
 get_lora_settings() {
-  step_banner 3 "LoRa Radio Settings"
+  step_banner 4 "LoRa Radio Settings"
   echo
 
   # Built-in UK defaults
@@ -288,10 +348,16 @@ get_lora_settings() {
 }
 
 # =============================================================================
-# STEP 4 – Optional components
+# STEP 5 – Optional components
 # =============================================================================
 select_optional_components() {
-  step_banner 4 "Optional Components"
+  step_banner 5 "Optional Components"
+
+  if [ "$INSTALL_RNS" != "y" ]; then
+    echo
+    warn "Reticulum/rnsd is not selected in this run."
+    warn "Only install these components if Reticulum is already available on this system."
+  fi
 
   # ── LXMF PropServer ────────────────────────────────────────────────────────
   echo
@@ -362,22 +428,25 @@ select_optional_components() {
 }
 
 # =============================================================================
-# STEP 5 – Summary & confirm
+# STEP 6 – Summary & confirm
 # =============================================================================
 show_summary() {
-  step_banner 5 "Configuration Summary"
+  step_banner 6 "Configuration Summary"
   echo
   box_top
   box_line "${ENV_NAME} Node Configuration" "$CYAN"
   box_mid
   box_blank
   box_left "Environment      : ${ENV_NAME}" "$WHITE"
-  box_left "RNode port       : ${RNODE_PORT}" "$WHITE"
-  box_left "Frequency (Hz)   : ${FREQUENCY}" "$WHITE"
-  box_left "Bandwidth (Hz)   : ${BANDWIDTH}" "$WHITE"
-  box_left "Spreading factor : ${SPREADING_FACTOR}" "$WHITE"
-  box_left "Coding rate      : ${CODING_RATE}" "$WHITE"
-  box_left "RNode mode       : ${RNODE_MODE}" "$WHITE"
+  box_left "Reticulum/rnsd   : $(yn_to_str "$INSTALL_RNS")" "$WHITE"
+  if [ "$INSTALL_RNS" = "y" ]; then
+    box_left "RNode port       : ${RNODE_PORT}" "$WHITE"
+    box_left "Frequency (Hz)   : ${FREQUENCY}" "$WHITE"
+    box_left "Bandwidth (Hz)   : ${BANDWIDTH}" "$WHITE"
+    box_left "Spreading factor : ${SPREADING_FACTOR}" "$WHITE"
+    box_left "Coding rate      : ${CODING_RATE}" "$WHITE"
+    box_left "RNode mode       : ${RNODE_MODE}" "$WHITE"
+  fi
   box_blank
   box_mid
   box_line "Optional Components" "$YELLOW"
@@ -470,9 +539,12 @@ install_rns() {
 
 write_reticulum_config() {
   local CONFIG_DIR="$HOME/.reticulum"
+  local CONFIG_FILE="$CONFIG_DIR/config"
   mkdir -p "$CONFIG_DIR"
 
-  cat > "$CONFIG_DIR/config" <<EOL
+  prepare_config_write "$CONFIG_FILE" "Reticulum" || return 0
+
+  cat > "$CONFIG_FILE" <<EOL
 [reticulum]
   enable_transport = Yes
   share_instance = Yes
@@ -512,7 +584,7 @@ write_reticulum_config() {
     # European 10% hourly airtime restriction
     # airtime_limit_long = 10
 EOL
-  ok "Reticulum config written: ${CONFIG_DIR}/config"
+  ok "Reticulum config written: ${CONFIG_FILE}"
 }
 
 install_rnsd_service() {
@@ -549,9 +621,11 @@ install_lxmf() {
   ok "LXMF installed."
 
   local LXMD_DIR="$HOME/.lxmd"
+  local LXMD_CONFIG="$LXMD_DIR/config"
   mkdir -p "$LXMD_DIR"
 
-  cat > "$LXMD_DIR/config" <<EOL
+  if prepare_config_write "$LXMD_CONFIG" "LXMF"; then
+    cat > "$LXMD_CONFIG" <<EOL
 [propagation]
   enable_node = yes
   node_name = ${LXMF_NODE_NAME}
@@ -570,7 +644,8 @@ install_lxmf() {
 [logging]
   loglevel = 4
 EOL
-  ok "LXMF config written: ${LXMD_DIR}/config"
+  ok "LXMF config written: ${LXMD_CONFIG}"
+  fi
 
   local SVC_USER
   SVC_USER=$(whoami)
@@ -606,11 +681,14 @@ install_nomadnet() {
   ok "NomadNet installed."
 
   local NN_DIR="$HOME/.nomadnetwork"
+  local NN_CONFIG="$NN_DIR/config"
   local PAGES_DIR="$NN_DIR/storage/pages"
+  local INDEX_PAGE="$PAGES_DIR/index.mu"
   mkdir -p "$PAGES_DIR"
 
-  # NomadNet config – node announces for page hosting, client does not
-  cat > "$NN_DIR/config" <<EOL
+  if prepare_config_write "$NN_CONFIG" "NomadNet"; then
+    # NomadNet config – node announces for page hosting, client does not
+    cat > "$NN_CONFIG" <<EOL
 [logging]
   loglevel = 4
 
@@ -625,10 +703,12 @@ install_nomadnet() {
   announce_at_start = yes
   announce_interval = 360
 EOL
-  ok "NomadNet config written: ${NN_DIR}/config"
+  ok "NomadNet config written: ${NN_CONFIG}"
+  fi
 
-  # Default welcome index page in micron format
-  cat > "$PAGES_DIR/index.mu" <<MICRON
+  if prepare_config_write "$INDEX_PAGE" "NomadNet index page"; then
+    # Default welcome index page in micron format
+    cat > "$INDEX_PAGE" <<MICRON
 >>\`c255Welcome to ${NOMADNET_NAME}\`<<
 
 This node is part of the ${ENV_NAME} Reticulum mesh network.
@@ -656,7 +736,8 @@ Open MeshChat or Sideband and add a TCP Client interface:
 73 de ${ENV_NAME}
 MICRON
 
-  ok "Default index page created: ${PAGES_DIR}/index.mu"
+  ok "Default index page created: ${INDEX_PAGE}"
+  fi
 
   local SVC_USER
   SVC_USER=$(whoami)
@@ -709,12 +790,14 @@ install_distgroup() {
 
   # Create the config directory - the script will auto-generate config.cfg on first run
   local DG_CONFIG_DIR="$HOME/.lxmf_distribution_group"
+  local DG_OVERRIDE_CONFIG="$DG_CONFIG_DIR/config.cfg.owr"
   mkdir -p "$DG_CONFIG_DIR"
   ok "Distribution group config directory: ${DG_CONFIG_DIR}"
 
-  # Write only the override file - config.cfg is auto-generated by the script on first run.
-  # config.cfg.owr contains only our changes and takes precedence over the defaults.
-  cat > "$DG_CONFIG_DIR/config.cfg.owr" <<EOL
+  if prepare_config_write "$DG_OVERRIDE_CONFIG" "LXMF distribution group override"; then
+    # Write only the override file - config.cfg is auto-generated by the script on first run.
+    # config.cfg.owr contains only our changes and takes precedence over the defaults.
+    cat > "$DG_OVERRIDE_CONFIG" <<EOL
 # User overrides for ${DISTGROUP_NAME}
 # All settings here take precedence over config.cfg.
 # Edit this file to customise - do not edit config.cfg directly.
@@ -728,7 +811,8 @@ propagation_node_auto = True
 # Then uncomment and set the line below, and restart this service.
 # propagation_node =
 EOL
-  ok "Override config written: ${DG_CONFIG_DIR}/config.cfg.owr"
+  ok "Override config written: ${DG_OVERRIDE_CONFIG}"
+  fi
 
   local SVC_USER
   SVC_USER=$(whoami)
@@ -773,26 +857,37 @@ show_completion() {
   box_line "✔  Installation Complete!" "$GREEN"
   box_blank
   box_mid
-  box_line "${ENV_NAME}  –  Reticulum LoRa Gateway" "$CYAN"
+  if [ "$INSTALL_RNS" = "y" ]; then
+    box_line "${ENV_NAME}  –  Reticulum LoRa Gateway" "$CYAN"
+  else
+    box_line "${ENV_NAME}  –  Optional Components" "$CYAN"
+  fi
   box_mid
   box_blank
   box_left "Hostname   : ${HOSTNAME_LOCAL}" "$WHITE"
   box_left "IP address : ${IP_ADDR}" "$WHITE"
   box_blank
-  box_mid
-  box_line "Client connection details  (TCP)" "$YELLOW"
-  box_mid
-  box_blank
-  box_left "Host : ${IP_ADDR}  or  ${HOSTNAME_LOCAL}" "$WHITE"
-  box_left "Port : 4242" "$WHITE"
-  box_blank
+  if [ "$INSTALL_RNS" = "y" ]; then
+    box_mid
+    box_line "Client connection details  (TCP)" "$YELLOW"
+    box_mid
+    box_blank
+    box_left "Host : ${IP_ADDR}  or  ${HOSTNAME_LOCAL}" "$WHITE"
+    box_left "Port : 4242" "$WHITE"
+    box_blank
+  fi
   box_mid
   box_line "Recommended Next Steps" "$YELLOW"
   box_mid
   box_blank
-  box_left "1.  Test manually first:  rnsd -vvv" "$WHITE"
-  box_left "2.  Reboot to activate all services." "$WHITE"
-  box_left "3.  Connect MeshChat / Sideband via the TCP details above." "$WHITE"
+  if [ "$INSTALL_RNS" = "y" ]; then
+    box_left "1.  Test manually first:  rnsd -vvv" "$WHITE"
+    box_left "2.  Reboot to activate all services." "$WHITE"
+    box_left "3.  Connect MeshChat / Sideband via the TCP details above." "$WHITE"
+  else
+    box_left "1.  Reboot or restart any services you changed." "$WHITE"
+    box_left "2.  Check selected service status with systemctl." "$WHITE"
+  fi
   if [ "$INSTALL_NOMADNET" = "y" ]; then
     box_blank
     box_left "NomadNet page:  ~/.nomadnetwork/storage/pages/index.mu" "$CYAN"
@@ -802,7 +897,9 @@ show_completion() {
     box_left "Dist. group:  run 'lxmd --info' after boot and copy the" "$YELLOW"
     box_left "  propagation_node hash into ~/.lxmf_distribution_group/config" "$YELLOW"
   fi
-  box_left "Please review settings at ~/.reticulum/config to ensure compliance with your local regulations." "$WHITE"
+  if [ "$INSTALL_RNS" = "y" ]; then
+    box_left "Please review settings at ~/.reticulum/config to ensure compliance with your local regulations." "$WHITE"
+  fi
   box_blank
   box_bot
   echo
@@ -815,8 +912,11 @@ main() {
   show_splash
 
   get_env_name
-  get_rnode_port
-  get_lora_settings
+  select_install_features
+  if [ "$INSTALL_RNS" = "y" ]; then
+    get_rnode_port
+    get_lora_settings
+  fi
   select_optional_components
   show_summary
 
@@ -826,11 +926,16 @@ main() {
 
   install_system_deps
   create_venv
-  install_rns
-  write_reticulum_config
 
-  echo
-  yn_prompt "Set up rnsd as a system service (starts on boot)?" && install_rnsd_service
+  if [ "$INSTALL_RNS" = "y" ]; then
+    install_rns
+    write_reticulum_config
+
+    echo
+    yn_prompt "Set up rnsd as a system service (starts on boot)?" && install_rnsd_service
+  else
+    warn "Skipping Reticulum/rnsd installation and service setup."
+  fi
 
   if [ "$INSTALL_LXMF" = "y" ]; then
     echo; info "── LXMF Propagation Server ────────────────────────────────────────"
@@ -850,4 +955,6 @@ main() {
   show_completion
 }
 
-main "$@"
+if [ "${RNSD_PI_SKIP_MAIN:-}" != "1" ]; then
+  main "$@"
+fi
