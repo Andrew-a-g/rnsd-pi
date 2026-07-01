@@ -39,13 +39,23 @@ if ! grep -q 'systemctl reenable "$svc"' "$REPO_ROOT/rnsd-pi-setup.sh"; then
   exit 1
 fi
 
-if ! grep -q 'WantedBy=multi-user.target rnsd.service' "$REPO_ROOT/rnsd-pi-setup.sh"; then
-  echo "lxmd/nomadnet units should also be wanted by rnsd.service for boot ordering" >&2
+if ! grep -q 'After=network-online.target time-sync.target' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "rnsd must not order itself after multi-user.target" >&2
   exit 1
 fi
 
-if ! grep -q 'WantedBy=multi-user.target lxmd.service' "$REPO_ROOT/rnsd-pi-setup.sh"; then
-  echo "distribution group unit should also be wanted by lxmd.service for boot ordering" >&2
+if grep -q 'After=multi-user.target' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "systemd services must not use After=multi-user.target; it creates boot ordering cycles" >&2
+  exit 1
+fi
+
+if grep -q 'WantedBy=.*rnsd.service\|WantedBy=.*lxmd.service' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "optional services should be directly wanted by multi-user.target only" >&2
+  exit 1
+fi
+
+if ! grep -q 'Wants=network-online.target rnsd.service' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "optional services should softly want rnsd and network-online" >&2
   exit 1
 fi
 

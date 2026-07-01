@@ -609,8 +609,8 @@ install_rnsd_service() {
   sudo tee /etc/systemd/system/rnsd.service > /dev/null <<EOF
 [Unit]
 Description=Reticulum Network Stack Daemon (${ENV_NAME})
-After=multi-user.target network.target time-sync.target
-Wants=network.target
+After=network-online.target time-sync.target
+Wants=network-online.target
 StartLimitIntervalSec=0
 
 [Service]
@@ -669,8 +669,8 @@ EOL
   sudo tee /etc/systemd/system/lxmd.service > /dev/null <<EOF
 [Unit]
 Description=LXMF Propagation Daemon (${LXMF_NODE_NAME})
-After=rnsd.service
-Requires=rnsd.service
+After=network-online.target rnsd.service
+Wants=network-online.target rnsd.service
 StartLimitIntervalSec=0
 
 [Service]
@@ -682,7 +682,7 @@ User=${SVC_USER}
 ExecStart=${VENV_BASE}/bin/lxmd --service --propagation-node
 
 [Install]
-WantedBy=multi-user.target rnsd.service
+WantedBy=multi-user.target
 EOF
 
   _verify_and_start_service "lxmd"
@@ -761,8 +761,8 @@ MICRON
   sudo tee /etc/systemd/system/nomadnet.service > /dev/null <<EOF
 [Unit]
 Description=NomadNet Node (${NOMADNET_NAME})
-After=rnsd.service
-Requires=rnsd.service
+After=network-online.target rnsd.service
+Wants=network-online.target rnsd.service
 StartLimitIntervalSec=0
 
 [Service]
@@ -774,7 +774,7 @@ User=${SVC_USER}
 ExecStart=${VENV_BASE}/bin/nomadnet --daemon
 
 [Install]
-WantedBy=multi-user.target rnsd.service
+WantedBy=multi-user.target
 EOF
 
   _verify_and_start_service "nomadnet"
@@ -834,8 +834,8 @@ EOL
   sudo tee /etc/systemd/system/lxmf-distgroup.service > /dev/null <<EOF
 [Unit]
 Description=LXMF Distribution Group (${DISTGROUP_NAME})
-After=lxmd.service rnsd.service
-Requires=lxmd.service
+After=network-online.target rnsd.service lxmd.service
+Wants=network-online.target rnsd.service lxmd.service
 StartLimitIntervalSec=0
 
 [Service]
@@ -847,7 +847,7 @@ User=${SVC_USER}
 ExecStart=${VENV_BASE}/bin/python3 ${DISTGROUP_SCRIPT} -p ${DG_CONFIG_DIR} -s -rs
 
 [Install]
-WantedBy=multi-user.target lxmd.service
+WantedBy=multi-user.target
 EOF
 
   _verify_and_start_service "lxmf-distgroup"
