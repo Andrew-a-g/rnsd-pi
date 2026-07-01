@@ -100,6 +100,20 @@ yn_prompt() {
 
 yn_to_str() { [ "$1" = "y" ] && echo "Yes" || echo "No"; }
 
+default_if_yes_no() {
+  # If a user accidentally types y/n at a free-text prompt, keep the default.
+  # This protects against answer skew when new wizard questions are added.
+  local value="$1" default_value="$2"
+  case "$value" in
+    [Yy]|[Yy][Ee][Ss]|[Nn]|[Nn][Oo])
+      printf '%s' "$default_value"
+      ;;
+    *)
+      printf '%s' "${value:-$default_value}"
+      ;;
+  esac
+}
+
 safe_name() {
   printf '%s' "$1" | tr -c '[:alnum:]._-' '_'
 }
@@ -374,7 +388,7 @@ select_optional_components() {
     local def_lxmf="${ENV_NAME}-LXMF-PropServer"
     ask "Propagation node name (default: ${def_lxmf}):"
     read -r LXMF_NODE_NAME
-    LXMF_NODE_NAME=${LXMF_NODE_NAME:-$def_lxmf}
+    LXMF_NODE_NAME=$(default_if_yes_no "$LXMF_NODE_NAME" "$def_lxmf")
     ok "LXMF PropServer name: ${YELLOW}${LXMF_NODE_NAME}${RESET}"
   else
     INSTALL_LXMF="n"
@@ -419,7 +433,7 @@ select_optional_components() {
     local def_grp="${ENV_NAME}-Group"
     ask "Distribution group name (default: ${def_grp}):"
     read -r DISTGROUP_NAME
-    DISTGROUP_NAME=${DISTGROUP_NAME:-$def_grp}
+    DISTGROUP_NAME=$(default_if_yes_no "$DISTGROUP_NAME" "$def_grp")
     ok "Group name: ${YELLOW}${DISTGROUP_NAME}${RESET}"
   else
     INSTALL_DISTGROUP="n"
@@ -665,7 +679,7 @@ Type=simple
 Restart=always
 RestartSec=15
 User=${SVC_USER}
-ExecStart=${VENV_BASE}/bin/lxmd --service
+ExecStart=${VENV_BASE}/bin/lxmd --service --propagation-node
 
 [Install]
 WantedBy=multi-user.target
