@@ -491,7 +491,7 @@ _verify_and_start_service() {
   ok "Service file written: ${svc_file} ($(wc -c < "$svc_file") bytes)"
 
   sudo systemctl daemon-reload
-  sudo systemctl enable "$svc"
+  sudo systemctl reenable "$svc"
   ok "${svc} enabled (will start on boot)."
 
   # Attempt to start now so the user sees immediately if it works
@@ -682,7 +682,7 @@ User=${SVC_USER}
 ExecStart=${VENV_BASE}/bin/lxmd --service --propagation-node
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target rnsd.service
 EOF
 
   _verify_and_start_service "lxmd"
@@ -774,7 +774,7 @@ User=${SVC_USER}
 ExecStart=${VENV_BASE}/bin/nomadnet --daemon
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target rnsd.service
 EOF
 
   _verify_and_start_service "nomadnet"
@@ -847,7 +847,7 @@ User=${SVC_USER}
 ExecStart=${VENV_BASE}/bin/python3 ${DISTGROUP_SCRIPT} -p ${DG_CONFIG_DIR} -s -rs
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target lxmd.service
 EOF
 
   _verify_and_start_service "lxmf-distgroup"

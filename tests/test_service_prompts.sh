@@ -34,4 +34,19 @@ if ! grep -q 'lxmd --service --propagation-node' "$REPO_ROOT/rnsd-pi-setup.sh"; 
   exit 1
 fi
 
+if ! grep -q 'systemctl reenable "$svc"' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "service helper must reenable units so changed WantedBy links are refreshed" >&2
+  exit 1
+fi
+
+if ! grep -q 'WantedBy=multi-user.target rnsd.service' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "lxmd/nomadnet units should also be wanted by rnsd.service for boot ordering" >&2
+  exit 1
+fi
+
+if ! grep -q 'WantedBy=multi-user.target lxmd.service' "$REPO_ROOT/rnsd-pi-setup.sh"; then
+  echo "distribution group unit should also be wanted by lxmd.service for boot ordering" >&2
+  exit 1
+fi
+
 echo "service prompt tests passed"
