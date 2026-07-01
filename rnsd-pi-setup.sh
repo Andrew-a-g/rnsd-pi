@@ -628,37 +628,6 @@ EOF
   _verify_and_start_service "rnsd"
 }
 
-install_optional_service_boot_dropin() {
-  # Some systems report optional services as enabled after install but still do
-  # not pull them in reliably at boot. Since rnsd is the root dependency for the
-  # optional Reticulum services, add an rnsd drop-in that explicitly starts the
-  # selected optional services after rnsd starts. The starts are no-block and
-  # best-effort, so missing/unselected services do not break rnsd.
-  local wants=()
-  [ "${INSTALL_LXMF:-n}" = "y" ] && wants+=("lxmd.service")
-  [ "${INSTALL_NOMADNET:-n}" = "y" ] && wants+=("nomadnet.service")
-  [ "${INSTALL_DISTGROUP:-n}" = "y" ] && wants+=("lxmf-distgroup.service")
-
-  [ "${#wants[@]}" -eq 0 ] && return 0
-
-  if ! systemctl list-unit-files rnsd.service >/dev/null 2>&1; then
-    warn "rnsd.service was not found, so optional service boot drop-in was not installed."
-    return 0
-  fi
-
-  info "Installing rnsd boot helper for selected optional services..."
-  sudo mkdir -p /etc/systemd/system/rnsd.service.d
-  {
-    echo "[Service]"
-    for svc in "${wants[@]}"; do
-      echo "ExecStartPost=/bin/sh -c 'systemctl start --no-block ${svc} || true'"
-    done
-  } | sudo tee /etc/systemd/system/rnsd.service.d/optional-services.conf > /dev/null
-
-  sudo systemctl daemon-reload
-  ok "rnsd boot helper installed for: ${wants[*]}"
-}
-
 # ── LXMF PropServer ──────────────────────────────────────────────────────────
 install_lxmf() {
   info "Installing LXMF into venv..."
@@ -996,8 +965,6 @@ main() {
     echo; info "── LXMF Distribution Group ────────────────────────────────────────"
     install_distgroup
   fi
-
-  install_optional_service_boot_dropin
 
   show_completion
 }
