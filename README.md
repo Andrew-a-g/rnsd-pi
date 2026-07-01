@@ -63,10 +63,12 @@ The setup wizard walks you through each option with a full-screen blue interface
 
 | Component | Description | Optional |
 |---|---|---|
-| **rnsd** | Reticulum transport node with LoRa + TCP server interface | No |
+| **rnsd** | Reticulum transport node with LoRa + TCP server interface | Yes |
 | **LXMF Propagation Server** | Stores and forwards messages for offline devices | Yes |
 | **NomadNet** | Hosts micron pages readable by any Reticulum client | Yes |
 | **LXMF Distribution Group** | Hosted group messaging (advanced users only) | Yes |
+
+Reticulum/rnsd can now be skipped when you are adding optional services to an existing Reticulum system. If you are setting up a new LoRa gateway from scratch, keep rnsd selected.
 
 ### Wizard Steps
 
@@ -77,7 +79,7 @@ The setup wizard walks you through each option with a full-screen blue interface
 5. **Optional components** — LXMF propagation server, NomadNet page hosting, distribution group
 6. **Summary and confirm** — review all settings before anything is written
 
-All selected services are configured as systemd units that start automatically on boot in the correct order.
+All selected services are configured as systemd units that start automatically on boot in the correct order. The services are attached directly to `multi-user.target` and use soft `Wants=` relationships for ordering, so optional services are still started at boot without creating systemd dependency cycles.
 
 ---
 
@@ -161,6 +163,8 @@ Reticulum/rnsd setup can be skipped. This is useful when Reticulum is already in
 
 If you skip Reticulum/rnsd, make sure the system already has a working Reticulum installation before enabling components that depend on it.
 
+For a new gateway, leave Reticulum/rnsd selected so the wizard creates `~/.reticulum/config`, installs Reticulum into `/opt/reticulum-venv`, and offers to install `rnsd.service`. For an existing node, you can skip rnsd and install only the optional components you need.
+
 ---
 
 ## Section 3 — Connect Reticulum Clients
@@ -243,19 +247,22 @@ Full docs: https://github.com/SebastianObi/LXMF-Tools/tree/main/lxmf_distributio
 
 All services are managed by systemd and start automatically on boot in the correct dependency order.
 
-| Service | Depends on | Start delay |
+| Service | Starts after / wants | Start delay |
 |---|---|---|
-| `rnsd.service` | network, time-sync | 5s |
-| `lxmd.service` | rnsd | 40s |
-| `nomadnet.service` | rnsd | 40s |
-| `lxmf-distgroup.service` | lxmd | 60s |
+| `rnsd.service` | `network-online.target`, time sync | 5s |
+| `lxmd.service` | `network-online.target`, `rnsd.service` | 40s |
+| `nomadnet.service` | `network-online.target`, `rnsd.service` | 40s |
+| `lxmf-distgroup.service` | `network-online.target`, `rnsd.service`, `lxmd.service` | 60s |
 
-The delays ensure Reticulum has fully initialised before dependent services attempt to connect.
+The optional services use soft systemd `Wants=` relationships and are directly enabled under `multi-user.target`. This avoids dependency loops while still ordering LXMF and NomadNet after Reticulum, and the distribution group after LXMF. The delays give Reticulum and LXMF time to initialise before dependent services attempt to connect.
+
+When the installer rewrites service files, it reloads systemd and reenables each unit so the boot symlinks match the latest `[Install]` section.
 
 Useful commands:
 ```bash
-sudo systemctl status rnsd lxmd nomadnet lxmf-distgroup
-sudo journalctl -u lxmd -n 50 --no-pager
+sudo systemctl status rnsd lxmd nomadnet lxmf-distgroup --no-pager
+sudo journalctl -b -u rnsd -u lxmd -u nomadnet -u lxmf-distgroup --no-pager
+sudo systemctl cat rnsd lxmd nomadnet lxmf-distgroup
 rnsd -vvv   # run interactively for debugging
 ```
 
@@ -281,8 +288,18 @@ UK default (built-in fallback if download fails):
 
 **Services not starting after reboot**
 ```bash
-sudo systemctl status lxmd nomadnet
-sudo journalctl -u lxmd -n 30 --no-pager
+sudo systemctl status rnsd lxmd nomadnet lxmf-distgroup --no-pager
+sudo systemctl is-enabled rnsd lxmd nomadnet lxmf-distgroup
+sudo journalctl -b -u rnsd -u lxmd -u nomadnet -u lxmf-distgroup --no-pager
+sudo systemctl cat rnsd lxmd nomadnet lxmf-distgroup
+```
+
+If a service is `enabled` but was not attempted during boot, check for ordering loops or stale enablement symlinks. The generated units should not contain `After=multi-user.target`, and optional services should be directly `WantedBy=multi-user.target`. Re-run the wizard, or manually refresh systemd after editing units:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl reenable rnsd lxmd nomadnet lxmf-distgroup
+sudo reboot
 ```
 
 **NomadNet not showing or "Anonymous Peer"**
